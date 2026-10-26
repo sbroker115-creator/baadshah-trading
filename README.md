@@ -1,1 +1,366 @@
 # baadshah-trading
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baadshah Trading | Demo Terminal</title>
+<style>
+:root{--bg:#080d18;--panel:#101827;--panel2:#141f31;--line:#26354b;--text:#eaf1fc;--muted:#91a2bb;--green:#00d69a;--red:#ff5574;--blue:#6d9cff;--gold:#ffc857}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;font-size:14px}
+button,input,select{font:inherit}
+.topbar{padding:15px 16px;background:#0d1422;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:21px;font-weight:800;letter-spacing:.3px}.brand span{color:var(--green)}
+.subtitle{font-size:11px;color:var(--muted);margin-top:5px}
+.demo{border:1px solid #80692b;color:var(--gold);padding:7px 10px;border-radius:8px;font-size:11px;font-weight:bold}
+.wrap{max-width:1500px;margin:auto;padding:14px;display:grid;gap:13px}
+.market-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.market-card,.panel,.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.market-card{padding:12px;cursor:pointer;min-width:0}
+.market-card.active{border-color:var(--blue);box-shadow:inset 0 0 0 1px #6d9cff33}
+.mname{font-size:12px;color:var(--muted)}.mprice{font-size:19px;font-weight:800;margin:9px 0 5px;overflow-wrap:anywhere}
+.green{color:var(--green)}.red{color:var(--red)}.muted{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{padding:13px;min-width:0}.stat-label{font-size:11px;color:var(--muted);margin-bottom:9px}
+.stat-value{font-size:19px;font-weight:800;overflow-wrap:anywhere}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:13px;align-items:start}
+.panel{overflow:hidden;min-width:0}.panel-head{padding:13px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-title{font-weight:800}.tiny{font-size:11px;color:var(--muted)}
+.chart-info{padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.price-big{font-size:23px;font-weight:800}.chart-wrap{height:320px;padding:0 7px 7px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.chart-foot{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.side{display:grid;gap:13px}
+.order-form{padding:14px}.field{margin-bottom:13px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}
+select,input{width:100%;padding:11px;background:#0a1220;color:var(--text);border:1px solid var(--line);border-radius:8px;outline:none}
+.trade-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.trade-btn{padding:14px 5px;border:0;border-radius:8px;color:#06120f;font-weight:900;cursor:pointer}
+.buy{background:var(--green)}.sell{background:var(--red);color:#fff}
+.trade-btn:active{transform:scale(.98)}
+.hint{font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}
+.signal{padding:14px}.signal-row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.signal-pill{padding:6px 9px;border-radius:7px;font-size:11px;font-weight:bold;background:#1a2b3c}
+.signal-track{height:8px;background:#26354b;border-radius:9px;overflow:hidden;display:flex}
+.signal-up{background:var(--green);width:50%;transition:width .4s}.signal-down{background:var(--red);flex:1}
+.signal-copy{font-size:12px;line-height:1.6;color:var(--muted);margin-top:11px}
+.bottom-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:13px}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #202d40}
+th{font-size:10px;color:var(--muted);font-weight:700;background:#111b2b}
+.empty{text-align:center;color:var(--muted);padding:22px}
+.position-row{padding:12px 14px;border-bottom:1px solid #202d40;display:flex;justify-content:space-between;gap:10px}
+.position-row:last-child{border-bottom:0}
+.position-name{font-weight:bold}.position-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.position-value{text-align:right;font-weight:bold}.notice{padding:12px 14px;background:#101827;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:11px;line-height:1.7}
+.footer{text-align:center;color:#74869f;font-size:11px;padding:4px 10px 20px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1b2b40;border:1px solid #3a4e6b;border-radius:10px;padding:12px 16px;display:none;z-index:9;max-width:92%;box-shadow:0 8px 30px #0008}
+@media(min-width:1000px){.wrap{padding:20px}.chart-wrap{height:400px}}
+@media(max-width:760px){.main{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr;align-items:start}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom-grid{grid-template-columns:1fr}.chart-wrap{height:300px}}
+@media(max-width:440px){.market-strip{gap:6px}.market-card{padding:9px}.mprice{font-size:15px}.market-card .tiny{font-size:10px}.side{grid-template-columns:1fr}.brand{font-size:19px}.stat-value{font-size:17px}.chart-wrap{height:265px}.wrap{padding:9px;gap:10px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="brand">♛ BAADSHAH <span>TRADING</span></div>
+    <div class="subtitle">Trading Terminal · Practice Mode</div>
+  </div>
+  <div class="demo">● DEMO · VIRTUAL MONEY</div>
+</header>
+
+<div class="wrap">
+  <section class="market-strip" id="marketCards"></section>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-label">Available Balance</div><div class="stat-value" id="cash">₹1,00,000</div></div>
+    <div class="stat"><div class="stat-label">Total Equity</div><div class="stat-value" id="equity">₹1,00,000</div></div>
+    <div class="stat"><div class="stat-label">Unrealized P&L</div><div class="stat-value" id="unrealized">₹0</div></div>
+    <div class="stat"><div class="stat-label">Realized P&L</div><div class="stat-value" id="realized">₹0</div></div>
+  </section>
+
+  <section class="main">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title" id="chartTitle">NIFTY 50 · DEMO CHART</div>
+        <div class="tiny">● AUTO MOVEMENT</div>
+      </div>
+      <div class="chart-info">
+        <div><div class="price-big" id="currentPrice">25,000.00</div><div class="tiny" id="changeText">Simulated price</div></div>
+        <div class="tiny">OHLC <span id="ohlc">—</span></div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+      <div class="chart-foot"><span>1m · Simulated candles</span><span id="marketStatus">Market simulation running</span></div>
+    </div>
+
+    <div class="side">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Place Demo Order</div></div>
+        <div class="order-form">
+          <div class="field"><label for="symbol">Select Instrument</label>
+            <select id="symbol">
+              <option value="NIFTY">NIFTY 50</option>
+              <option value="BANKNIFTY">BANK NIFTY</option>
+              <option value="CRUDEOIL">CRUDE OIL</option>
+            </select>
+          </div>
+          <div class="field"><label for="qty">Quantity (units)</label><input id="qty" type="number" min="1" max="10000" step="1" value="1"></div>
+          <div class="field"><label>Current Demo Price</label><div class="price-big" id="orderPrice">₹25,000.00</div></div>
+          <div class="trade-buttons">
+            <button class="trade-btn buy" id="buyBtn">▲ BUY</button>
+            <button class="trade-btn sell" id="sellBtn">▼ SELL</button>
+          </div>
+          <div class="hint">BUY से वर्चुअल यूनिट खरीदें। SELL से पहले खरीदी गई यूनिट बेचें। प्रत्येक ऑर्डर का भाव नीचे हिस्ट्री में दिखेगा।</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Market Direction</div><div class="tiny">DEMO SIGNAL</div></div>
+        <div class="signal">
+          <div class="signal-row"><span class="muted">Direction</span><span class="signal-pill" id="direction">ANALYZING</span></div>
+          <div class="signal-row"><span class="muted">Recent movement</span><b id="momentum">—</b></div>
+          <div class="signal-track"><div class="signal-up" id="signalUp"></div><div class="signal-down"></div></div>
+          <div class="signal-copy" id="signalCopy">काल्पनिक कीमतों की दिशा देखी जा रही है। यह वास्तविक ट्रेडिंग सिग्नल नहीं है।</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Order History</div><div class="tiny" id="orderCount">0 orders</div></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>TIME</th><th>INSTRUMENT</th><th>TYPE</th><th>QTY</th><th>FILL PRICE</th><th>STATUS</th></tr></thead>
+          <tbody id="orders"><tr><td colspan="6" class="empty">अभी कोई ऑर्डर नहीं है।</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Open Positions</div><div class="tiny">VIRTUAL HOLDINGS</div></div>
+      <div id="positions"><div class="empty">अभी कोई खुली पोज़िशन नहीं है।</div></div>
+    </div>
+  </section>
+
+  <div class="notice">
+    <b style="color:var(--gold)">डेमो सूचना:</b> यह वेबसाइट केवल अभ्यास और प्रदर्शन के लिए है। कीमतें कंप्यूटर द्वारा बनाई जाती हैं; ये NSE/MCX की लाइव कीमतें नहीं हैं। दिशा पैनल केवल हाल की काल्पनिक कीमतों का सार है, भविष्य की गारंटी या निवेश सलाह नहीं। सभी बैलेंस और ऑर्डर वर्चुअल हैं।
+  </div>
+</div>
+<div class="footer">BAADSHAH TRADING · SIMULATION ONLY · NO REAL ORDERS</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+  const instruments = {
+    NIFTY: {name:"NIFTY 50", start:25000, volatility:24},
+    BANKNIFTY: {name:"BANK NIFTY", start:54000, volatility:65},
+    CRUDEOIL: {name:"CRUDE OIL", start:6200, volatility:12}
+  };
+  const money = n => "₹" + Number(n).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const number = n => Number(n).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const state = {};
+  Object.keys(instruments).forEach(key => {
+    const base = instruments[key].start;
+    let p = base;
+    const candles = [];
+    for(let i=0;i<44;i++){
+      const o=p;
+      const c=Math.max(1,o+(Math.random()-.49)*instruments[key].volatility*2.5);
+      candles.push({o,h:Math.max(o,c)+Math.random()*instruments[key].volatility*.6,
+        l:Math.min(o,c)-Math.random()*instruments[key].volatility*.6,c});
+      p=c;
+    }
+    state[key]={price:p, previous:base, candles, positionQty:0, avg:0};
+  });
+
+  let selected="NIFTY", cash=100000, realized=0, orders=[];
+  const $ = id => document.getElementById(id);
+  const chart=$("chart"), ctx=chart.getContext("2d");
+
+  function toast(message){
+    $("toast").textContent=message;
+    $("toast").style.display="block";
+    clearTimeout(toast.timer);
+    toast.timer=setTimeout(()=>$("toast").style.display="none",2800);
+  }
+  function pnl(key){
+    const s=state[key];
+    return (s.price-s.avg)*s.positionQty;
+  }
+  function totalUnrealized(){
+    return Object.keys(state).reduce((sum,k)=>sum+pnl(k),0);
+  }
+  function equity(){
+    return cash+Object.keys(state).reduce((sum,k)=>sum+state[k].positionQty*state[k].price,0);
+  }
+  function colorClass(n){return n>=0?"green":"red"}
+  function signedMoney(n){return (n>0?"+":"")+money(n)}
+
+  function renderCards(){
+    $("marketCards").innerHTML=Object.keys(instruments).map(k=>{
+      const s=state[k], diff=s.price-s.previous;
+      return `<div class="market-card ${selected===k?"active":""}" data-key="${k}">
+        <div class="mname">${instruments[k].name}</div>
+        <div class="mprice">${number(s.price)}</div>
+        <div class="tiny ${colorClass(diff)}">${diff>=0?"▲":"▼"} ${signedMoney(diff)}</div>
+      </div>`;
+    }).join("");
+    document.querySelectorAll(".market-card").forEach(el=>el.addEventListener("click",()=>{
+      selected=el.dataset.key; $("symbol").value=selected; renderAll();
+    }));
+  }
+
+  function renderStats(){
+    $("cash").textContent=money(cash);
+    $("equity").textContent=money(equity());
+    $("unrealized").textContent=signedMoney(totalUnrealized());
+    $("unrealized").className="stat-value "+colorClass(totalUnrealized());
+    $("realized").textContent=signedMoney(realized);
+    $("realized").className="stat-value "+colorClass(realized);
+  }
+
+  function renderOrderPanel(){
+    const s=state[selected], diff=s.price-s.previous;
+    $("chartTitle").textContent=instruments[selected].name+" · DEMO CHART";
+    $("currentPrice").textContent=number(s.price);
+    $("currentPrice").className="price-big "+colorClass(diff);
+    $("changeText").textContent=(diff>=0?"▲ +":"▼ ")+number(diff)+" since reference";
+    const c=s.candles[s.candles.length-1];
+    $("ohlc").textContent=`${number(c.o)} / ${number(c.h)} / ${number(c.l)} / ${number(c.c)}`;
+    $("orderPrice").textContent=money(s.price);
+    const recent=s.candles.slice(-8);
+    const first=recent[0].o, last=recent[recent.length-1].c;
+    const up=last>=first, pct=Math.abs((last-first)/first*100);
+    $("direction").textContent=up?"UPWARD":"DOWNWARD";
+    $("direction").style.color=up?"var(--green)":"var(--red)";
+    $("momentum").textContent=(up?"+":"-")+pct.toFixed(3)+"%";
+    $("momentum").style.color=up?"var(--green)":"var(--red)";
+    $("signalUp").style.width=Math.max(8,Math.min(92,50+(up?1:-1)*Math.min(pct*100,38)))+"%";
+    $("signalCopy").textContent=up
+      ?"हाल की डेमो कैंडल्स में कीमत ऊपर गई है। यह केवल पिछली चाल है, खरीदने का भरोसेमंद संकेत नहीं।"
+      :"हाल की डेमो कैंडल्स में कीमत नीचे गई है। यह केवल पिछली चाल है, बेचने का भरोसेमंद संकेत नहीं।";
+  }
+
+  function renderOrders(){
+    $("orderCount").textContent=orders.length+" orders";
+    $("orders").innerHTML=orders.length?orders.slice(0,50).map(o=>`
+      <tr><td>${o.time}</td><td>${o.name}</td>
+      <td class="${o.side==="BUY"?"green":"red"}"><b>${o.side}</b></td>
+      <td>${o.qty}</td><td>${money(o.price)}</td><td class="green">FILLED · DEMO</td></tr>
+    `).join(""):`<tr><td colspan="6" class="empty">अभी कोई ऑर्डर नहीं है।</td></tr>`;
+  }
+
+  function renderPositions(){
+    const open=Object.keys(instruments).filter(k=>state[k].positionQty>0);
+    $("positions").innerHTML=open.length?open.map(k=>{
+      const s=state[k], u=pnl(k);
+      return `<div class="position-row">
+        <div><div class="position-name">${instruments[k].name}</div>
+        <div class="position-sub">Qty ${s.positionQty} · Avg ${money(s.avg)}</div>
+        <div class="position-sub">LTP ${money(s.price)}</div></div>
+        <div class="position-value ${colorClass(u)}">${signedMoney(u)}<div class="position-sub">Unrealized P&L</div></div>
+      </div>`;
+    }).join(""):`<div class="empty">अभी कोई खुली पोज़िशन नहीं है।</div>`;
+  }
+
+  function drawChart(){
+    const rect=chart.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const dpr=window.devicePixelRatio||1;
+    chart.width=Math.floor(rect.width*dpr);
+    chart.height=Math.floor(rect.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const w=rect.width,h=rect.height;
+    ctx.clearRect(0,0,w,h);
+    const candles=state[selected].candles.slice(-38);
+    let min=Math.min(...candles.map(c=>c.l)), max=Math.max(...candles.map(c=>c.h));
+    const pad=(max-min)*.12||1; min-=pad;max+=pad;
+    const left=8,right=57,top=14,bottom=23;
+    const cw=w-left-right,ch=h-top-bottom;
+    const y=p=>top+(max-p)/(max-min)*ch;
+    ctx.font="10px Arial";
+    for(let i=0;i<5;i++){
+      const yy=top+i*ch/4;
+      ctx.strokeStyle="#26354b";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(w-right+3,yy);ctx.stroke();
+      const val=max-i*(max-min)/4;
+      ctx.fillStyle="#91a2bb";ctx.textAlign="left";
+      ctx.fillText(val.toLocaleString("en-IN",{maximumFractionDigits:1}),w-right+7,yy+3);
+    }
+    const step=cw/candles.length, body=Math.max(3,Math.min(10,step*.58));
+    candles.forEach((c,i)=>{
+      const x=left+i*step+step/2, rising=c.c>=c.o, col=rising?"#00d69a":"#ff5574";
+      ctx.strokeStyle=col;ctx.lineWidth=1.3;
+      ctx.beginPath();ctx.moveTo(x,y(c.h));ctx.lineTo(x,y(c.l));ctx.stroke();
+      ctx.fillStyle=col;
+      const yy=Math.min(y(c.o),y(c.c)), bh=Math.max(1.5,Math.abs(y(c.o)-y(c.c)));
+      ctx.fillRect(x-body/2,yy,body,bh);
+    });
+    const last=candles[candles.length-1].c, ly=y(last);
+    ctx.setLineDash([4,3]);ctx.strokeStyle="#6d9cff";
+    ctx.beginPath();ctx.moveTo(left,ly);ctx.lineTo(w-right+2,ly);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#6d9cff";ctx.fillRect(w-right+3,ly-9,right-4,18);
+    ctx.fillStyle="#07111f";ctx.textAlign="center";
+    ctx.fillText(number(last),w-right/2+2,ly+3);
+    ctx.fillStyle="#91a2bb";ctx.textAlign="left";
+    ctx.fillText("SIMULATED PRICE",left,h-6);
+  }
+
+  function renderAll(){
+    renderCards();renderStats();renderOrderPanel();renderOrders();renderPositions();drawChart();
+  }
+
+  function placeOrder(side){
+    const qty=Number($("qty").value);
+    if(!Number.isInteger(qty)||qty<1||qty>10000){
+      toast("कृपया 1 से 10,000 के बीच पूरी quantity डालें।");return;
+    }
+    const s=state[selected], price=s.price, value=price*qty;
+    if(side==="BUY"){
+      if(value>cash){toast("वर्चुअल बैलेंस कम है। Quantity कम करें।");return;}
+      s.avg=(s.avg*s.positionQty+value)/(s.positionQty+qty);
+      s.positionQty+=qty;cash-=value;
+    }else{
+      if(qty>s.positionQty){toast("इतनी quantity बेचने के लिए पहले BUY करें। खुली quantity: "+s.positionQty);return;}
+      cash+=value;
+      realized+=(price-s.avg)*qty;
+      s.positionQty-=qty;
+      if(s.positionQty===0)s.avg=0;
+    }
+    orders.unshift({time:new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),name:instruments[selected].name,side,qty,price});
+    toast(`${side} FILLED · ${qty} unit(s) @ ${money(price)} · DEMO`);
+    renderAll();
+  }
+
+  function tick(){
+    Object.keys(instruments).forEach(k=>{
+      const s=state[k], cfg=instruments[k];
+      const last=s.candles[s.candles.length-1];
+      const move=(Math.random()-.49)*cfg.volatility*1.35;
+      const next=Math.max(1,last.c+move);
+      last.h=Math.max(last.h,next);last.l=Math.min(last.l,next);last.c=next;
+      s.price=next;
+      // A new candle is created automatically every few ticks.
+      s._ticks=(s._ticks||0)+1;
+      if(s._ticks>=4){
+        s._ticks=0;
+        const o=last.c;
+        s.candles.push({o,h:o,l:o,c:o});
+        if(s.candles.length>80)s.candles.shift();
+      }
+    });
+    renderAll();
+  }
+
+  $("symbol").addEventListener("change",e=>{selected=e.target.value;renderAll()});
+  $("buyBtn").addEventListener("click",()=>placeOrder("BUY"));
+  $("sellBtn").addEventListener("click",()=>placeOrder("SELL"));
+  window.addEventListener("resize",drawChart);
+  renderAll();
+  setInterval(tick,1400);
+})();
+</script>
+</body>
+</html>
