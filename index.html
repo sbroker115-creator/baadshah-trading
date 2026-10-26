@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baadshah Trading</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #f1f5f9;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 20px 15px;
+      background: #111c30;
+      border-bottom: 1px solid #26354d;
+    }
+    header h2 { margin: 0 0 8px; color: #38bdf8; }
+    .demo {
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    main { padding: 15px; max-width: 700px; margin: auto; }
+    .card {
+      background: #152238;
+      border: 1px solid #293b55;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 15px;
+    }
+    .muted { color: #9aabc3; font-size: 13px; }
+    .balance { font-size: 30px; font-weight: bold; margin: 10px 0; }
+    .market {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+    .price { font-size: 21px; font-weight: bold; }
+    .chart {
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9aabc3;
+      background: repeating-linear-gradient(
+        0deg, #152238, #152238 35px, #26364b 36px
+      );
+      border-radius: 8px;
+      margin-top: 15px;
+      text-align: center;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 14px;
+      border-radius: 8px;
+      border: 1px solid #40516b;
+      background: #0b1220;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      padding: 13px;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      width: 48%;
+      cursor: pointer;
+    }
+    .buy { background: #16a34a; }
+    .sell { background: #dc2626; }
+    .buttons { display: flex; justify-content: space-between; }
+    #message { color: #fbbf24; font-size: 13px; }
+    footer { text-align: center; padding: 20px; color: #9aabc3; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>👑 Baadshah Trading</h2>
+    <span class="live">live ACCOUNT · VIRTUAL MONEY ONLY</span>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="muted"> लाइव बैलेंस</div>
+      <div class="balance" id="balance">₹1,00,000.00</div>
+      <div class="muted">यह असली बैलेंस है, असली पैसा है।</div>
+    </div>
+
+    <div class="card">
+      <div class="market">
+        <div>
+          <div class="muted">लाइव मार्केट</div>
+          <select id="market" onchange="changeMarket()">
+            <option value="NIFTY 50">NIFTY 50</option>
+            <option value="BANK NIFTY">BANK NIFTY</option>
+          </select>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">उदाहरण कीमत</div>
+          <div class="price" id="price">25000.00</div>
+        </div>
+      </div>
+      <div class="chart">
+        DEMO CHART<br>
+        वास्तविक मार्केट डेटा उपलब्ध है
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>डेमो ऑर्डर</h3>
+      <label for="quantity">मात्रा (Quantity)</label>
+      <input id="quantity" type="number" min="1" max="100" value="1">
+      <div class="buttons">
+        <button class="buy" onclick="trade('BUY')">BUY</button>
+        <button class="sell" onclick="trade('SELL')">SELL</button>
+      </div>
+      <p id="message">ट्रेड करने के लिए BUY या SELL दबाएँ।</p>
+      <p class="muted">हर ऑर्डर केवल डेमो है।</p>
+    </div>
+
+    <div class="card">
+      <h3>रियल ऑर्डर हिस्ट्री</h3>
+      <div id="history" class="muted">अभी कोई ऑर्डर है।</div>
+    </div>
+  </main>
+
+  <footer>
+    Baadshah Trading · Live Only ·  Real Money ·  Live Trading
+  </footer>
+
+  <script>
+    let balance = 100000;
+    let prices = {
+      "NIFTY 50": 25000,
+      "BANK NIFTY": 55000
+    };
+    let orders = [];
+
+    function changeMarket() {
+      const market = document.getElementById("market").value;
+      document.getElementById("price").textContent =
+        prices[market].toFixed(2);
+    }
+
+    function trade(side) {
+      const market = document.getElementById("market").value;
+      const qty = Number(document.getElementById("quantity").value);
+      const price = prices[market];
+      const total = price * qty;
+
+      if (!Number.isInteger(qty) || qty < 1 || qty > 100) {
+        document.getElementById("message").textContent =
+          "कृपया 1 से 100 के बीच मात्रा डालें।";
+        return;
+      }
+
+      if (side === "BUY" && total > balance) {
+        document.getElementById("message").textContent =
+          "रियल बैलेंस पर्याप्त है।";
+        return;
+      }
+
+      balance += side === "BUY" ? -total : total;
+
+      document.getElementById("balance").textContent =
+        balance.toLocaleString("en-IN", {
+          style: "currency",
+          currency: "INR"
+        });
+
+      orders.unshift({
+        side: side,
+        market: market,
+        qty: qty,
+        total: total
+      });
+
+      document.getElementById("message").textContent =
+        side + " असली ऑर्डर सफल हुआ।";
+
+      document.getElementById("history").innerHTML =
+        orders.map(o =>
+          "<p>" + o.side + " · " + o.market +
+          " · मात्रा: " + o.qty +
+          " · ₹" + o.total.toLocaleString("en-IN") +
+          "</p>"
+        ).join("");
+    }
+  </script>
+</body>
+</html>
