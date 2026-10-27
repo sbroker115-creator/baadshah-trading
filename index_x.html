@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baadshah Trading - Demo</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#edf4ff;font-family:Arial,sans-serif}
+header{padding:16px;background:#101e31;border-bottom:1px solid #26364c}
+h1{font-size:22px;margin:0;color:#54e0b5}
+header p{margin:6px 0 0;color:#a9bad0;font-size:12px}
+main{max-width:1100px;margin:auto;padding:14px}
+.notice{background:#332b12;color:#ffe08a;padding:10px;border-radius:8px;font-size:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.card{background:#101e31;border:1px solid #26364c;border-radius:12px;padding:14px;flex:1;min-width:140px}
+.small{font-size:12px;color:#9eb0c7}
+.value{font-size:22px;font-weight:bold;margin-top:7px}
+select,input{background:#07111f;color:white;border:1px solid #3b506a;border-radius:8px;padding:11px;width:100%;margin-top:6px}
+button{border:0;border-radius:8px;padding:12px;font-weight:bold;cursor:pointer}
+.green{background:#13bd86;color:#041c15}
+.red{background:#f04f65;color:white}
+.blue{background:#2877f0;color:white}
+.full{width:100%;margin-top:8px}
+#chart{height:430px;background:#0b1626;border-radius:10px;overflow:hidden}
+#chart iframe{width:100%;height:100%;border:0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #29384c}
+.tablewrap{overflow-x:auto}
+#result{display:none;margin-top:12px}
+.profit{color:#31e0a1}.loss{color:#ff6478}
+@media(max-width:600px){#chart{height:350px}.value{font-size:19px}main{padding:9px}}
+</style>
+</head>
+<body>
+<header>
+<h1>BAADSHAH TRADING</h1>
+<p>DEMO TRADING TERMINAL · Practice Mode Only</p>
+</header>
+<main>
+<div class="notice">⚠️ यह केवल डेमो ट्रेडिंग है। असली पैसे या असली ऑर्डर इस्तेमाल नहीं होते।</div>
+
+<div class="row">
+<div class="card">
+<div class="small">DEMO BALANCE</div>
+<div class="value" id="balance">₹1,00,000.00</div>
+</div>
+<div class="card">
+<div class="small">LIVE DEVICE DATE & TIME</div>
+<div class="value" id="clock">--</div>
+<div class="small" id="date">--</div>
+</div>
+</div>
+
+<div class="row">
+<div class="card">
+<label>Market चुनें</label>
+<select id="market" onchange="changeMarket()">
+<option value="NSE:BANKNIFTY">Bank Nifty</option>
+<option value="MCX:CRUDEOIL1!">Crude Oil</option>
+<option value="NSE:NIFTY">Nifty 50</option>
+<option value="MCX:GOLD1!">Gold</option>
+<option value="BINANCE:BTCUSDT">Bitcoin</option>
+</select>
+</div>
+<div class="card">
+<label>Investment (₹)</label>
+<input id="investment" type="number" min="1" value="5000">
+</div>
+<div class="card">
+<label>Trade Duration</label>
+<select id="duration">
+<option value="1">1 Minute</option>
+<option value="3">3 Minutes</option>
+<option value="5">5 Minutes</option>
+<option value="15">15 Minutes</option>
+</select>
+</div>
+<div class="card">
+<label>Demo Payout (%)</label>
+<input id="payout" type="number" min="1" max="100" value="82">
+</div>
+</div>
+
+<div class="card">
+<div class="small" id="chartTitle">BANK NIFTY CHART</div>
+<div id="chart" style="margin-top:10px"></div>
+</div>
+
+<div class="row">
+<div class="card">
+<div class="small">DEMO REFERENCE PRICE</div>
+<div class="value" id="price">Loading...</div>
+<div class="small">यह चार्ट के वास्तविक भाव से अलग simulated demo price है।</div>
+<button class="green full" onclick="placeTrade('UP')">UP / BUY ▲</button>
+<button class="red full" onclick="placeTrade('DOWN')">DOWN / SELL ▼</button>
+</div>
+<div class="card">
+<div class="small">POTENTIAL PROFIT (₹5,000 पर 82%)</div>
+<div class="value profit" id="potential">₹4,100.00</div>
+<div class="small">जीतने पर कुल वापसी: ₹9,100</div>
+<div id="tradeStatus" style="margin-top:12px">अभी कोई ट्रेड चालू नहीं है।</div>
+<button class="blue full" onclick="showHistory()">Trade History देखें</button>
+</div>
+</div>
+
+<div class="card" id="result">
+<h3>Trade Result Details</h3>
+<div id="resultDetails"></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+<h3>Trade History</h3>
+<div class="tablewrap">
+<table>
+<thead><tr>
+<th>Order ID</th><th>Market</th><th>Direction</th><th>Investment</th><th>Result</th><th>Profit/Loss</th><th>Details</th>
+</tr></thead>
+<tbody id="history"></tbody>
+</table>
+</div>
+</div>
+</main>
