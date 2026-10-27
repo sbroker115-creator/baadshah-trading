@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baadshah Trading Demo</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111d;color:#eaf2ff;font-family:Arial,sans-serif}
+header{padding:16px;background:#101e30;border-bottom:1px solid #2b4058}
+h1{margin:0;color:#43e0b0;font-size:23px}
+header p{margin:6px 0 0;color:#9fb2ca;font-size:12px}
+main{max-width:1100px;margin:auto;padding:12px}
+.card{background:#101e30;border:1px solid #293e56;border-radius:12px;padding:13px;margin-bottom:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.card{flex:1;min-width:135px}
+.small{font-size:12px;color:#9fb2ca}
+.value{font-size:21px;font-weight:bold;margin-top:7px;overflow-wrap:anywhere}
+input,select{width:100%;padding:11px;background:#07111d;color:white;border:1px solid #3b5069;border-radius:8px;margin-top:7px}
+button{padding:12px;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
+.full{width:100%;margin-top:8px}
+.buy{background:#0fc18a;color:#062018}
+.sell{background:#f04f65;color:white}
+.blue{background:#2878f0;color:white}
+.muted{color:#9fb2ca}
+.notice{background:#302913;color:#ffe49b;padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px}
+#chart{height:340px;position:relative;background:#081522;border-radius:8px;overflow:hidden}
+#chart canvas{width:100%;height:100%;display:block}
+#chartLabel{position:absolute;top:8px;left:9px;background:#081522dd;padding:6px;border-radius:5px;font-size:12px}
+#chartMode{position:absolute;right:8px;top:8px;background:#081522dd;padding:6px;border-radius:5px;font-size:11px;color:#ffdc80}
+.signal{padding:12px;background:#0a1725;border-radius:8px;margin-top:10px}
+.green{color:#39e3a6}.red{color:#ff697b}
+#result{display:none}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12px}
+td,th{padding:9px;border-bottom:1px solid #2b4058;text-align:left;white-space:nowrap}
+.tag{display:inline-block;padding:4px 7px;border-radius:5px;background:#26384d}
+@media(max-width:500px){#chart{height:300px}.value{font-size:18px}main{padding:8px}}
+</style>
+</head>
+<body>
+<header>
+<h1>BAADSHAH TRADING</h1>
+<p>DEMO TRADING TERMINAL · Practice Only</p>
+</header>
+<main>
+<div class="notice">⚠️ DEMO MODE: चार्ट और ट्रेड प्राइस सिम्युलेटेड हैं। असली मार्केट ऑर्डर या निश्चित भविष्यवाणी नहीं।</div>
+
+<div class="row">
+<div class="card">
+<div class="small">DEMO BALANCE</div>
+<div class="value" id="balance">₹1,00,000.00</div>
+</div>
+<div class="card">
+<div class="small">आज की तारीख और समय</div>
+<div class="value" id="clock">--:--:--</div>
+<div class="small" id="today">--</div>
+</div>
+</div>
+
+<div class="card">
+<div class="row">
+<div style="flex:2;min-width:150px">
+<div class="small">MARKET</div>
+<select id="market">
+<option value="Bank Nifty">Bank Nifty</option>
+<option value="Crude Oil">Crude Oil</option>
+<option value="Nifty 50">Nifty 50</option>
+<option value="Gold">Gold</option>
+<option value="Bitcoin">Bitcoin</option>
+</select>
+</div>
+<div style="flex:1;min-width:120px">
+<div class="small">TRADE AMOUNT ₹</div>
+<input id="amount" type="number" min="1" value="5000">
+</div>
+<div style="flex:1;min-width:120px">
+<div class="small">DURATION</div>
+<select id="duration">
+<option value="1">1 मिनट</option>
+<option value="2" selected>2 मिनट</option>
+<option value="3">3 मिनट</option>
+<option value="5">5 मिनट</option>
+</select>
+</div>
+</div>
+<div class="row" style="margin-top:10px">
+<div style="flex:1;min-width:120px">
+<div class="small">DEMO PAYOUT %</div>
+<input id="payout" type="number" min="1" max="100" value="82">
+</div>
+<div style="flex:1;min-width:120px">
+<div class="small">POTENTIAL PROFIT</div>
+<div class="value green" id="potential">₹4,100.00</div>
+<div class="small" id="returnAmount">जीत पर कुल ₹9,100</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="row" style="align-items:center">
+<div style="flex:1">
+<div class="small">DEMO MARKET PRICE</div>
+<div class="value" id="price">1000.00</div>
+<div class="small" id="change">प्राइस बदल रहा है...</div>
+</div>
+<div style="text-align:right">
+<div class="small">TIME LEFT</div>
+<div class="value" id="timer">--:--</div>
+<div class="small" id="marketState">ट्रेड के लिए तैयार</div>
+</div>
+</div>
+
+<div id="chart" style="margin-top:12px">
+<canvas id="chartCanvas"></canvas>
+<div id="chartLabel">DEMO CANDLE CHART</div>
+<div id="chartMode">SIMULATED DATA</div>
+</div>
+
+<div class="signal">
+<div class="small">PRICE DIRECTION · SHORT-TERM DEMO SIGNAL</div>
+<div class="value" id="direction">प्राइस देखा जा रहा है...</div>
+<div class="small" id="directionNote">यह संकेत भविष्य की गारंटी नहीं है।</div>
+</div>
+
+<div class="row" style="margin-top:10px">
+<div style="flex:1">
+<button class="buy full" id="buyBtn" onclick="placeTrade('UP')">BUY / UP ▲</button>
+</div>
+<div style="flex:1">
+<button class="sell full" id="sellBtn" onclick="placeTrade('DOWN')">SELL / DOWN ▼</button>
+</div>
+</div>
+<button class="blue full" id="closeBtn" onclick="closeTrade(true)" style="display:none">अभी ट्रेड बंद करें</button>
+<div class="small" id="status" style="margin-top:10px">ट्रेड शुरू करने के लिए BUY या SELL चुनें।</div>
+</div>
+
+<div class="card" id="result">
+<h3>पिछले ट्रेड का रिज़ल्ट</h3>
+<div id="resultDetails"></div>
+</div>
+
+<div class="card">
+<div class="row" style="align-items:center">
+<h3 style="margin:0;flex:1">Trade History</h3>
+<button class="blue" onclick="exportHistory()">रिकॉर्ड डाउनलोड</button>
+</div>
+<div class="tablewrap" style="margin-top:10px">
+<table>
+<thead><tr>
+<th>Order ID</th><th>Market</th><th>Direction</th>
+<th>Amount</th><th>Entry</th><th>Exit</th>
+<th>Result</th><th>P/L</th><th>Details</th>
+</tr></thead>
+<tbody id="history"></tbody>
+</table>
+</div>
+<p class="small">रिकॉर्ड इस ब्राउज़र में सेव होता है। ब्राउज़र का डेटा हटाने पर रिकॉर्ड मिट सकता है।</p>
+</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>'₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const stamp=d=>new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+function updateClock(){
+ const d=new Date();
+ $('clock').textContent=d.toLocaleTimeString('en-IN',{hour12:true});
+ $('today').textContent=d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+}
+setInterval(updateClock,250);updateClock();
+
+let balance=Number(localStorage.getItem('btBalance')||100000);
+let history=JSON.parse(localStorage.getItem('btHistory')||'[]');
+let trade=null, candles=[], price=1000, lastPrice=1000, orderCounter=Date.now();
+let candleOpen=1000,candleHigh=1000,candleLow=1000,candleStart=Date.now();
+let lastMove=0;
+
+function save(){
+ localStorage.setItem('btBalance',String(balance));
+ localStorage.setItem('btHistory',JSON.stringify(history));
+}
+function fmtPrice(p){return Number(p).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function marketBase(){
+ const m=$('market').value;
+ if(m==='Bank Nifty')return 52000;
+ if(m==='Crude Oil')return 6000;
+ if(m==='Nifty 50')return 25000;
+ if(m==='Gold')return 75000;
+ return 100000;
+}
+function initMarket(){
+ price=marketBase();
+ lastPrice=price;
+ candleOpen=price;candleHigh=price;candleLow=price;
+ candles=[];
+ for(let i=0;i<45;i++){
+  let o=price;
+  price+=((Math.random()-.49)*price*.0015);
+  candles.push({o,h:Math.max(o,price),l:Math.min(o,price),c:price,t:Date.now()-((45-i)*5000)});
+ }
+ price=candles[candles.length-1].c;
+ candleOpen=price;candleHigh=price;candleLow=price;
+ $('price').textContent=fmtPrice(price);
+ drawChart();updateSignal();updatePotential();
+}
+$('market').addEventListener('change',()=>{
+ if(trade){alert('पहले चालू ट्रेड बंद होने दें।');return}
+ initMarket();
+});
+function updatePotential(){
+ const a=Math.max(0,Number($('amount').value)||0);
+ const p=Math.min(100,Math.max(1,Number($('payout').value)||82));
+ $('potential').textContent=money(a*p/100);
+ $('returnAmount').textContent='जीत पर कुल '+money(a+a*p/100);
+}
+$('amount').addEventListener('input',updatePotential);
+$('payout').addEventListener('input',updatePotential);
+
+function tickPrice(){
+ lastPrice=price;
+ const vol=marketBase()*.00025;
+ price=Math.max(.01,price+(Math.random()-.49)*vol);
+ candleHigh=Math.max(candleHigh,price);
+ candleLow=Math.min(candleLow,price);
+ $('price').textContent=fmtPrice(price);
+ const diff=price-lastPrice;
+ $('change').textContent=(diff>=0?'▲ +':'▼ ')+fmtPrice(diff)+' (demo)';
+ $('change').className='small '+(diff>=0?'green':'red');
+ lastMove=diff;
+ if(Date.now()-candleStart>=5000){
+  candles.push({o:candleOpen,h:candleHigh,l:candleLow,c:price,t:candleStart});
+  if(candles.length>65)candles.shift();
+  candleOpen=price;candleHigh=price;candleLow=price;candleStart=Date.now();
+ }
+ drawChart();updateSignal();
+ if(trade){
+  const left=Math.max(0,trade.end-Date.now());
+  $('timer').textContent=String(Math.floor(left/60000)).padStart(2,'0')+':'+String(Math.floor((left%60000)/1000)).padStart(2,'0');
+  $('marketState').textContent='ट्रेड चालू';
+  if(Date.now()>=trade.end)closeTrade(false);
+ }
+}
+setInterval(tickPrice,1000);
+
+function updateSignal(){
+ const up=lastMove>0;
+ $('direction').textContent=up?'▲ प्राइस ऊपर जा रहा है':'▼ प्राइस नीचे जा रहा है';
+ $('direction').className='value '+(up?'green':'red');
+ $('directionNote').textContent='पिछले डेमो मूवमेंट पर आधारित; अगला मूवमेंट अलग हो सकता है।';
+}
+
+function drawChart(){
+ const c=$('chartCanvas'),ctx=c.getContext('2d');
+ const rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ if(!rect.width||!rect.height)return;
+ c.width=rect.width*dpr;c.height=rect.height*dpr;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ const w=rect.width,h=rect.height;
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle='#081522';ctx.fillRect(0,0,w,h);
+ let arr=candles.slice();
+ arr.push({o:candleOpen,h:candleHigh,l:candleLow,c:price,t:Date.now()});
+ if(!arr.length)return;
+ let hi=Math.max(...arr.map(x=>x.h)),lo=Math.min(...arr.map(x=>x.l));
+ if(hi===lo){hi+=1;lo-=1}
+ let pad={l:8,r:65,t:34,b:20},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ const y=v=>pad.t+(hi-v)/(hi-lo)*ch;
+ ctx.strokeStyle='#203247';ctx.lineWidth=1;
+ for(let i=0;i<5;i++){
+  let yy=pad.t+ch*i/4;
+  ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke();
+  let val=hi-(hi-lo)*i/4;
+  ctx.fillStyle='#9fb2ca';ctx.font='10px Arial';
+  ctx.fillText(fmtPrice(val),w-pad.r+4,yy+3);
+ }
+ let step=cw/Math.max(arr.length,1),body=Math.max(3,Math.min(10,step*.62));
+ arr.forEach((v,i)=>{
+  const x=pad.l+i*step+step/2;
+  const up=v.c>=v.o;
+  ctx.strokeStyle=up?'#18c995':'#fa6074';
+  ctx.fillStyle=ctx.strokeStyle;
+  ctx.beginPath();ctx.moveTo(x,y(v.h));ctx.lineTo(x,y(v.l));ctx.stroke();
+  let top=Math.min(y(v.o),y(v.c)),bh=Math.max(1,Math.abs(y(v.o)-y(v.c)));
+  ctx.fillRect(x-body/2,top,body,bh);
+ });
+ const py=y(price);
+ ctx.strokeStyle='#f4d35e';ctx.setLineDash([5,4]);
+ ctx.beginPath();ctx.moveTo(pad.l,py);ctx.lineTo(w-pad.r,py);ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='#f4d35e';ctx.fillRect(w-pad.r,py-9,pad.r,18);
+ ctx.fillStyle='#111';ctx.font='bold 10px Arial';ctx.fillText(fmtPrice(price),w-pad.r+3,py+3);
+ if(trade){
+  const ey=y(Math.max(lo,Math.min(hi,trade.entry)));
+  ctx.strokeStyle=trade.dir==='UP'?'#20d69d':'#ff657a';
+  ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(pad.l,ey);ctx.lineTo(w-pad.r,ey);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=trade.dir==='UP'?'#20d69d':'#ff657a';
+  ctx.font='bold 11px Arial';
+  ctx.fillText((trade.dir==='UP'?'BUY':'SELL')+' ENTRY',pad.l+4,Math.max(47,ey-5));
+ }
+}
+window.addEventListener('resize',drawChart);
+
+function placeTrade(dir){
+ if(trade){alert('एक समय पर केवल एक डेमो ट्रेड चालू रखें।');return}
+ const amount=Number($('amount').value);
+ const payout=Number($('payout').value);
+ if(!amount||amount<=0||amount>balance){alert('सही निवेश राशि डालें। डेमो बैलेंस पर्याप्त होना चाहिए।');return}
+ if(!payout||payout<1||payout>100){alert('Payout 1 से 100 के बीच रखें।');return}
+ const minutes=Number($('duration').value);
+ balance-=amount;
+ trade={
+  id:'BT-'+Date.now()+'-'+Math.floor(Math.random()*900+100),
+  market:$('market').value,dir,amount,payout,entry:price,
+  openAt:Date.now(),end:Date.now()+minutes*60000,minutes
+ };
+ save();renderBalance();
+ $('buyBtn').disabled=true;$('sellBtn').disabled=true;
+ $('closeBtn').style.display='block';
+ $('status').textContent='ट्रेड चालू: '+(dir==='UP'?'BUY / UP':'SELL / DOWN')+' · एंट्री '+fmtPrice(price);
+ $('status').className=dir==='UP'?'green':'red';
+ $('marketState').textContent='ट्रेड चालू';
+ drawChart();
+}
+
+function closeTrade(manual){
+ if(!trade)return;
+ const t=trade;
+ const exit=price,closedAt=Date.now();
+ let won=t.dir==='UP'?exit>t.entry:exit<t.entry;
+ if(exit===t.entry)won=false;
+ const profit=won?t.amount*t.payout/100:-t.amount;
+ const result=won?'WIN':'LOSS';
+ if(won)balance+=t.amount+profit;
+ const record={
+  ...t,exit,closedAt,result,profit,
+  closeReason:manual?'Manual Close':'Time Expired'
+ };
+ history.unshift(record);history=history.slice(0,200);
+ trade=null;save();renderBalance();renderHistory();
+ $('buyBtn').disabled=false;$('sellBtn').disabled=false;
+ $('closeBtn').style.display='none';
+ $('timer').textContent='00:00';
+ $('marketState').textContent='ट्रेड पूरा';
+ $('status').textContent='ट्रेड पूरा हो गया। रिज़ल्ट नीचे देखें।';
+ $('result').style.display='block';
+ $('resultDetails').innerHTML=`
+ <p><b>Order ID:</b> ${record.id}</p>
+ <p><b>Market:</b> ${record.market}</p>
+ <p><b>Direction:</b> ${record.dir==='UP'?'BUY / UP':'SELL / DOWN'}</p>
+ <p><b>Investment:</b> ${money(record.amount)}</p>
+ <p><b>Opening Price:</b> ${fmtPrice(record.entry)}</p>
+ <p><b>Opening Date/Time:</b> ${stamp(record.openAt)}</p>
+ <p><b>Closing Price:</b> ${fmtPrice(record.exit)}</p>
+ <p><b>Closing Date/Time:</b> ${stamp(record.closedAt)}</p>
+ <p><b>Duration:</b> ${record.minutes} minute(s)</p>
+ <p><b>Result:</b> <span class="${won?'green':'red'}">${result}</span></p>
+ <p><b>Net Profit/Loss:</b> <span class="${profit>=0?'green':'red'}">${money(profit)}</span></p>
+ <p><b>Close Type:</b> ${record.closeReason}</p>
+ <p class="small">यह सिम्युलेटेड डेमो रिज़ल्ट है, वास्तविक ट्रेडिंग परिणाम नहीं।</p>`;
+ drawChart();
+}
+function renderBalance(){$('balance').textContent=money(balance)}
+function renderHistory(){
+ $('history').innerHTML=history.map((r,i)=>`<tr>
+ <td>${r.id}</td><td>${r.market}</td>
+ <td>${r.dir==='UP'?'BUY':'SELL'}</td><td>${money(r.amount)}</td>
+ <td>${fmtPrice(r.entry)}</td><td>${fmtPrice(r.exit)}</td>
+ <td class="${r.result==='WIN'?'green':'red'}">${r.result}</td>
+ <td class="${r.profit>=0?'green':'red'}">${money(r.profit)}</td>
+ <td><button class="blue" onclick="showDetail(${i})">Details</button></td>
+ </tr>`).join('');
+ if(!history.length)$('history').innerHTML='<tr><td colspan="9">अभी कोई ट्रेड रिकॉर्ड नहीं है।</td></tr>';
+}
+function showDetail(i){
+ const r=history[i];if(!r)return;
+ $('result').style.display='block';
+ $('resultDetails').innerHTML=`
+ <p><b>Order ID:</b> ${r.id}</p>
+ <p><b>Market:</b> ${r.market}</p>
+ <p><b>Direction:</b> ${r.dir==='UP'?'BUY / UP':'SELL / DOWN'}</p>
+ <p><b>Investment:</b> ${money(r.amount)}</p>
+ <p><b>Entry Price:</b> ${fmtPrice(r.entry)}</p>
+ <p><b>Open Time:</b> ${stamp(r.openAt)}</p>
+ <p><b>Exit Price:</b> ${fmtPrice(r.exit)}</p>
+ <p><b>Close Time:</b> ${stamp(r.closedAt)}</p>
+ <p><b>Duration:</b> ${r.minutes} minute(s)</p>
+ <p><b>Result:</b> ${r.result}</p>
+ <p><b>Profit/Loss:</b> ${money(r.profit)}</p>`;
+ $('result').scrollIntoView({behavior:'smooth'});
+}
+function showHistory(){$('history').scrollIntoView({behavior:'smooth'})}
+function exportHistory(){
+ const data=JSON.stringify(history,null,2);
+ const blob=new Blob([data],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='baadshah-demo-history.json';a.click();
+ URL.revokeObjectURL(url);
+}
+renderBalance();renderHistory();updatePotential();initMarket();
+</script>
+</body>
+</html>
