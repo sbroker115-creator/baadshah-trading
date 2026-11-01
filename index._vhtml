@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baadshah Trading</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:22px 14px;
+ background:radial-gradient(circle at top,#252012,#080a0f 55%);
+ color:white;font-family:Arial,sans-serif;
+}
+.card{
+ max-width:520px;margin:auto;padding:24px;
+ background:linear-gradient(155deg,#191e2a,#0c0f16);
+ border:1px solid #d7ad45;border-radius:20px;
+ box-shadow:0 18px 55px #0009;
+}
+.brand{text-align:center;margin-bottom:22px}
+.crown{font-size:36px;color:#d7ad45}
+h1{color:#e8c46c;font-size:25px;letter-spacing:1px}
+.sub{color:#aaa;font-size:12px;letter-spacing:2px}
+label{display:block;margin:16px 0 7px;font-size:14px}
+input,select{
+ width:100%;padding:14px;color:white;
+ background:#090d15;border:1px solid #343d4d;
+ border-radius:10px;font-size:16px;
+}
+input:focus,select:focus{border-color:#d7ad45;outline:none}
+.result{
+ margin-top:18px;padding:17px;
+ border:1px solid #80672f;border-radius:12px;
+ background:linear-gradient(135deg,#211b0d,#111722);
+}
+.result-title{color:#d7ad45;font-size:12px}
+.profit{margin:9px 0;font-size:23px;font-weight:bold}
+.time{color:#ddd;font-size:14px}
+.username{margin-top:15px;color:#aaa;font-size:13px}
+.username strong{color:#f4d27c}
+button{
+ width:100%;margin-top:20px;padding:16px;
+ border:0;border-radius:11px;
+ background:linear-gradient(90deg,#b98b2e,#f0d27c);
+ color:#17120a;font-size:16px;font-weight:bold;
+}
+.error{display:none;color:#ff9999;margin-top:10px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="card">
+<header class="brand">
+ <div class="crown">♛</div>
+ <h1>BAADSHAH TRADING</h1>
+ <div class="sub">CLIENT REGISTRATION</div>
+</header>
+
+<form id="registerForm">
+
+<label>Full Name</label>
+<input id="fullName" type="text"
+placeholder="अपना पूरा नाम लिखें" required>
+
+<label>Mobile Number</label>
+<input id="mobile" type="tel" maxlength="10"
+inputmode="numeric" placeholder="10 अंकों का नंबर"
+pattern="[0-9]{10}" required>
+
+<label>Age</label>
+<input id="age" type="number" min="18" max="100"
+placeholder="अपनी उम्र लिखें" required>
+
+<label>Investment Amount</label>
+<select id="investment" required>
+<option value="">Investment Amount चुनें</option>
+<option value="5000">₹5,000</option>
+<option value="10000">₹10,000</option>
+<option value="20000">₹20,000</option>
+<option value="25000">₹25,000</option>
+<option value="30000">₹30,000</option>
+<option value="50000">₹50,000</option>
+<option value="100000">₹1,00,000</option>
+</select>
+
+<div class="result">
+ <div class="result-title">EXPECTED PROFIT RANGE</div>
+ <div class="profit" id="profit">Investment चुनें</div>
+ <div class="time" id="time">समय यहाँ दिखाई देगा</div>
+</div>
+
+<div class="username">
+ Your Username: <strong id="username">BTXXXXXXXX</strong>
+</div>
+
+<div class="error" id="error">
+कृपया सभी जानकारी सही भरें।
+</div>
+
+<button type="submit">REGISTER VIA WHATSAPP</button>
+
+</form>
+</div>
+
+<script>
+const plans={
+"5000":{
+profit:"₹25,000 से ₹30,000 तक",
+time:"1 घंटा"
+},
+"10000":{
+profit:"₹40,000 से ₹45,000 तक",
+time:"1 घंटा 30 मिनट"
+},
+"20000":{
+profit:"₹80,000 से ₹85,000 तक",
+time:"2 घंटे"
+},
+"25000":{
+profit:"₹1,00,000 से ₹1,10,000 तक",
+time:"2 घंटे 30 मिनट"
+},
+"30000":{
+profit:"₹1,20,000 से ₹1,25,000 तक",
+time:"3 घंटे"
+},
+"50000":{
+profit:"₹2,00,000 से ₹2,20,000 तक",
+time:"4 घंटे"
+},
+"100000":{
+profit:"₹3,60,000 से ₹3,90,000 तक",
+time:"5 घंटे"
+}
+};
+
+const nameInput=document.getElementById("fullName");
+const investment=document.getElementById("investment");
+
+nameInput.addEventListener("input",()=>{
+let name=nameInput.value.trim()
+.replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+document.getElementById("username").textContent=
+name ? "BT"+name.slice(0,8) : "BTXXXXXXXX";
+});
+
+investment.addEventListener("change",()=>{
+let plan=plans[investment.value];
+document.getElementById("profit").textContent=
+plan ? plan.profit : "Investment चुनें";
+document.getElementById("time").textContent=
+plan ? "अनुमानित समय: "+plan.time : "समय यहाँ दिखाई देगा";
+});
+
+document.getElementById("registerForm")
+.addEventListener("submit",(e)=>{
+e.preventDefault();
+
+let name=nameInput.value.trim();
+let mobile=document.getElementById("mobile").value.trim();
+let age=document.getElementById("age").value;
+let amount=investment.value;
+
+if(!name || !/^[0-9]{10}$/.test(mobile) ||
+!age || Number(age)<18 || !plans[amount]){
+document.getElementById("error").style.display="block";
+return;
+}
+
+document.getElementById("error").style.display="none";
+
+let plan=plans[amount];
+let username=document.getElementById("username").textContent;
+
+let message=
+"*BAADSHAH TRADING REGISTRATION*\n\n"+
+"*Full Name:* "+name+"\n"+
+"*Mobile:* "+mobile+"\n"+
+"*Age:* "+age+"\n"+
+"*Username:* "+username+"\n"+
+"*Investment:* ₹"+Number(amount).toLocaleString("en-IN")+"\n"+
+"*Expected Profit:* "+plan.profit+"\n"+
+"*Expected Time:* "+plan.time;
+
+window.open(
+"https://wa.me/917296887458?text="+
+encodeURIComponent(message),"_blank"
+);
+});
+</script>
+</body>
+</html>
