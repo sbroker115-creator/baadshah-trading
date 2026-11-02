@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baadshah Trading</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090e18;color:white;font-family:Arial}
+header{padding:17px;background:#111b2c;display:flex;justify-content:space-between;align-items:center}
+.logo{color:#e8bd55;font-size:19px;font-weight:bold}
+button{border:0;padding:12px;border-radius:9px;font-weight:bold;cursor:pointer}
+.more{background:#34435c;color:white}
+main{padding:12px;max-width:900px;margin:auto}
+.box{background:#141f31;border:1px solid #293a53;border-radius:13px;padding:14px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+small{color:#aab7ca}
+h2,h3{margin:5px 0 13px}
+.gold{color:#e8bd55}
+input,select{width:100%;padding:12px;background:#0b1423;color:white;border:1px solid #3a4b65;border-radius:8px;margin:6px 0}
+canvas{width:100%;height:230px;background:#0b1423;border-radius:9px}
+.actions{display:flex;gap:10px;margin-top:12px}
+.actions button{flex:1;font-size:17px}
+.buy{background:#18bd83;color:#001b10}
+.sell{background:#fa586b;color:white}
+table{width:100%;font-size:11px;border-collapse:collapse}
+td,th{padding:8px;border-bottom:1px solid #35435a;text-align:left}
+.tablewrap{overflow-x:auto}
+#settings{display:none;position:fixed;inset:0;background:#000d;z-index:5;overflow:auto;padding:15px}
+.settingsbox{background:#142036;padding:18px;border-radius:15px;max-width:600px;margin:15px auto}
+.green{color:#20d69a}.red{color:#ff6474}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">👑 BAADSHAH TRADING</div>
+<button class="more" onclick="openMore()">☰ MORE</button>
+</header>
+
+<main>
+<div class="stats">
+<div class="box"><small>DEMO BALANCE</small><h2 class="gold" id="balance">₹10,000</h2></div>
+<div class="box"><small>NET PROFIT / LOSS</small><h2 id="net">₹0</h2></div>
+</div>
+
+<div class="box">
+<small>SELECTED MARKET</small>
+<h2 id="market">BANK NIFTY</h2>
+<small>DEMO PRICE</small>
+<h2 class="gold" id="price">48,250.00</h2>
+<canvas id="chart" width="850" height="260"></canvas>
+<small>Simulated demo chart — real market feed नहीं।</small>
+</div>
+
+<div class="box">
+<h3>INVESTOR DETAILS</h3>
+<input id="investor" placeholder="Investor Name">
+<input id="amount" type="number" value="500" placeholder="Investment Amount">
+<select id="duration">
+<option value="60">1 Minute</option>
+<option value="120">2 Minutes</option>
+<option value="180">3 Minutes</option>
+</select>
+<div class="actions">
+<button class="buy" onclick="trade('UP')">▲ BUY / UP</button>
+<button class="sell" onclick="trade('DOWN')">▼ SELL / DOWN</button>
+</div>
+<p id="timer">No Active Trade</p>
+</div>
+
+<div class="box">
+<h3>TRADE DETAILS</h3>
+<p>Investment: <b id="invest">—</b></p>
+<p>Gross Profit/Loss: <b id="gross">—</b></p>
+<p>GST / Charge: <b id="gst">—</b></p>
+<p>Net Profit/Loss: <b id="result">—</b></p>
+<p>Total Return: <b id="returns">—</b></p>
+<p>Demo Reference ID: <b id="ref">—</b></p>
+</div>
+
+<div class="box">
+<h3>ORDERS / HISTORY</h3>
+<button onclick="report()" style="background:#e8bd55">DOWNLOAD REPORT</button>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Investor</th><th>Market</th><th>Side</th><th>Amount</th><th>Result</th><th>Net P/L</th></tr></thead>
+<tbody id="orders"></tbody>
+</table>
+</div>
+</div>
+</main>
+
+<div id="settings">
+<div class="settingsbox">
+<button onclick="closeMore()" style="float:right;background:#34435c;color:white">CLOSE ✕</button>
+<h2 class="gold">MORE CONTROL PANEL</h2>
+<label>Demo Balance</label>
+<input id="newBalance" type="number">
+<label>Market Select</label>
+<select id="newMarket"></select>
+<label>Profit Percentage</label>
+<input id="newPayout" type="number" value="80">
+<label>GST Percentage</label>
+<input id="newGST" type="number" value="20">
+<button onclick="save()" style="width:100%;background:#e8bd55">SAVE SETTINGS</button>
+<p style="color:#aab7ca;font-size:12px">यहाँ से सभी डेमो सेटिंग बदलें।</p>
+</div>
+</div>
+
+<script>
+let balance=10000,net=0,price=48250;
+let payout=80,gstRate=20,market="BANK NIFTY";
+let trades=[],active=false;
+let markets=["BANK NIFTY","NIFTY 50","CRUDE OIL","GOLD","SILVER","BITCOIN","ETHEREUM","EUR/USD","GBP/USD","USD/JPY","EUR/CHF"];
+
+const $=id=>document.getElementById(id);
+markets.forEach(m=>$("newMarket").add(new Option(m,m)));
+function update(){
+$("balance").innerText="₹"+balance.toFixed(2);
+$("net").innerText="₹"+net.toFixed(2);
+$("net").className=net>=0?"green":"red";
+$("market").innerText=market;
+$("price").innerText=price.toFixed(2);
+}
+function openMore(){
+$("settings").style.display="block";
+$("newBalance").value=balance;
+$("newMarket").value=market;
+$("newPayout").value=payout;
+$("newGST").value=gstRate;
+}
+function closeMore(){$("settings").style.display="none"}
+function save(){
+let b=+$("newBalance").value,p=+$("newPayout").value,g=+$("newGST").value;
+if(!Number.isFinite(b)||b<0||p<0||g<0||g>100||!$("newMarket").value){alert("सही सेटिंग भरें");return}
+balance=b;payout=p;gstRate=g;market=$("newMarket").value;
+update();closeMore();
+}
+function trade(side){
+if(active)return alert("पहले वाला ट्रेड पूरा होने दें");
+let amount=+$("amount").value,name=$("investor").value.trim();
+if(!name)return alert("Investor Name भरें");
+if(!Number.isFinite(amount)||amount<=0||amount>balance)return alert("Investment सही भरें");
+balance-=amount;active=true;
+let entry=price,seconds=+$("duration").value;
+update();
+$("timer").innerText="Trade Running: "+seconds+" sec";
+let timer=setInterval(()=>{
+seconds--;
+$("timer").innerText="Time Left: "+seconds+" sec";
+if(seconds<=0){
+clearInterval(timer);
+let won=side==="UP"?price>entry:price<entry;
+let gross=won?amount*payout/100:-amount;
+let tax=won?gross*gstRate/100:0;
+let profit=gross-tax;
+let returned=won?amount+profit:0;
+balance+=returned;net+=profit;active=false;
+let id="BDT-"+Date.now();
+$("invest").innerText="₹"+amount;
+$("gross").innerText="₹"+gross.toFixed(2);
+$("gst").innerText="₹"+tax.toFixed(2);
+$("result").innerText="₹"+profit.toFixed(2);
+$("returns").innerText="₹"+returned.toFixed(2);
+$("ref").innerText=id;
+$("timer").innerText=won?"WIN":"LOSS";
+trades.unshift({name,market,side,amount,result:won?"WIN":"LOSS",profit});
+$("orders").innerHTML=trades.map(t=>`<tr><td>${escapeHTML(t.name)}</td><td>${t.market}</td><td>${t.side}</td><td>₹${t.amount}</td><td>${t.result}</td><td>₹${t.profit.toFixed(2)}</td></tr>`).join("");
+update();
+}
+},1000);
+}
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function report(){
+if(!trades.length)return alert("अभी कोई ट्रेड नहीं है");
+let csv="Investor,Market,Side,Investment,Result,Net P/L\n"+trades.map(t=>[t.name,t.market,t.side,t.amount,t.result,t.profit].join(",")).join("\n");
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
+a.download="Baadshah-Trading-Report.csv";a.click();
+URL.revokeObjectURL(a.href);
+}
+let candles=Array.from({length:50},()=>price+(Math.random()-.5)*100);
+function draw(){
+let c=$("chart"),x=c.getContext("2d"),w=c.width,h=c.height;
+x.clearRect(0,0,w,h);
+let min=Math.min(...candles)-20,max=Math.max(...candles)+20;
+let y=v=>h-(v-min)/(max-min)*h;
+for(let i=0;i<candles.length;i++){
+let prev=candles[i-1]||candles[i],v=candles[i];
+x.strokeStyle=v>=prev?"#20d69a":"#ff6474";
+x.fillStyle=x.strokeStyle;
+x.beginPath();x.moveTo(i*17+8,y(v)-12);x.lineTo(i*17+8,y(v)+12);x.stroke();
+x.fillRect(i*17+3,Math.min(y(v),y(prev)),10,Math.max(3,Math.abs(y(v)-y(prev))));
+}
+}
+setInterval(()=>{
+price=Math.max(1,price+(Math.random()-.5)*30);
+candles.push(price);candles.shift();draw();update();
+},1200);
+update();draw();
+</script>
+</body>
+</html>
