@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Positions Demo</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#f3f5f4;
+ font-family:Arial,sans-serif;color:#222;
+}
+header{
+ background:white;padding:15px;
+ box-shadow:0 2px 5px #ddd;
+ position:sticky;top:0;z-index:5;
+}
+.brand{font-size:21px;font-weight:bold;color:#16845b}
+.demo{font-size:11px;color:#b17b18}
+nav{
+ display:flex;gap:7px;overflow:auto;
+ margin-top:14px;
+}
+nav button{
+ background:#f0f3f1;color:#333;
+ white-space:nowrap;
+}
+button{
+ border:0;border-radius:9px;padding:11px 14px;
+ background:#16845b;color:white;
+ font-weight:bold;cursor:pointer;
+}
+button.active{background:#16845b;color:white}
+main{max-width:850px;margin:auto;padding:14px}
+.page{display:none}
+.page.active{display:block}
+.card,.trade{
+ background:white;border:1px solid #e4e8e5;
+ border-radius:13px;padding:16px;margin-bottom:13px;
+}
+.label{color:#69736d;font-size:14px}
+.profit{
+ font-size:32px;font-weight:bold;
+ color:#173f31;margin:10px 0;
+}
+.stats{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:8px;margin-top:15px;
+}
+.stat{background:#f4f8f5;padding:12px;border-radius:9px}
+.stat b{display:block;margin-top:7px;font-size:18px}
+.title{font-size:19px;font-weight:bold;margin:18px 0 12px}
+.tradehead{display:flex;justify-content:space-between;gap:8px;font-weight:bold}
+.green{color:#16845b}
+.red{color:#c33}
+.meta{font-size:12px;color:#69736d;margin:12px 0}
+.row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:#69736d;margin-top:10px}
+.tag{background:#eaf5ef;color:#16845b;padding:5px 8px;border-radius:6px}
+input,select{
+ width:100%;padding:11px;margin:6px 0 12px;
+ border:1px solid #d7dfd9;border-radius:8px;
+ font-size:15px;background:white;
+}
+label{font-size:13px;font-weight:bold;color:#555}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.note{background:#fff7e5;padding:12px;border-radius:9px;font-size:12px;color:#765b20}
+@media(max-width:450px){
+ .stats{grid-template-columns:1fr 1fr}
+ .profit{font-size:28px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="brand">↗ Trading Positions</div>
+ <div class="demo">DEMO SIMULATOR</div>
+
+ <nav>
+  <button class="active" onclick="showPage('home',this)">Home</button>
+  <button onclick="showPage('positions',this)">Positions</button>
+  <button onclick="showPage('orders',this)">Orders</button>
+  <button onclick="showPage('control',this)">Control Panel</button>
+ </nav>
+</header>
+
+<main>
+
+<!-- HOME PAGE -->
+<section id="home" class="page active">
+
+ <div class="card">
+  <div class="label">Overall P&L</div>
+  <div class="profit" id="homeProfit">₹29,056.46</div>
+  <div class="label">Today's Demo Profit / Loss</div>
+
+  <div class="stats">
+   <div class="stat">
+    <span class="label">Positions</span>
+    <b id="homeCount">2</b>
+   </div>
+   <div class="stat">
+    <span class="label">GST</span>
+    <b id="homeGST">₹8,100</b>
+   </div>
+   <div class="stat">
+    <span class="label">Trades</span>
+    <b id="homeTrades">2</b>
+   </div>
+  </div>
+ </div>
+
+ <div class="title">Recent Positions</div>
+ <div id="recent"></div>
+
+ <div class="card">
+  <div class="title">Quick Summary</div>
+  <div class="row">
+   <span>Net P&L</span><b id="sideProfit">₹29,056.46</b>
+  </div>
+  <div class="row">
+   <span>GST Deducted</span><b id="sideGST">₹8,100</b>
+  </div>
+  <div class="row">
+   <span>Last Updated</span><b id="updated">--</b>
+  </div>
+ </div>
+
+</section>
+
+<!-- POSITIONS PAGE -->
+<section id="positions" class="page">
+
+ <div class="card">
+  <div class="label">Overall P&L</div>
+  <div class="profit" id="positionProfit">₹29,056.46</div>
+  <div class="label">
+   Positions: <b id="positionCount">2</b>
+  </div>
+  <p class="label" id="gstInfo">GST ₹8,100 deducted</p>
+ </div>
+
+ <div class="title">Closed Positions</div>
+ <div id="tradeList"></div>
+
+</section>
+
+<!-- ORDERS PAGE -->
+<section id="orders" class="page">
+ <div class="title">Orders</div>
+ <div id="orderList"></div>
+</section>
+
+<!-- CONTROL PANEL -->
+<section id="control" class="page">
+
+ <div class="title">Profit Control</div>
+
+ <div class="card">
+  <label>Overall Profit / Loss (₹)</label>
+  <input id="editProfit" type="number" step="0.01" value="29056.46">
+
+  <div class="grid">
+   <div>
+    <label>GST Amount (₹)</label>
+    <input id="editGST" type="number" value="8100">
+   </div>
+   <div>
+    <label>Position Count</label>
+    <input id="editCount" type="number" value="2">
+   </div>
+  </div>
+
+  <button onclick="updateSummary()">Update Profit</button>
+ </div>
+
+ <div class="title">Add New Position</div>
+
+ <div class="card">
+
+  <label>Company / Index</label>
+  <input id="symbol" value="SENSEX">
+
+  <div class="grid">
+   <div>
+    <label>Date</label>
+    <input id="tradeDate" type="date">
+   </div>
+   <div>
+    <label>Strike Price</label>
+    <input id="strike" type="number" value="79300">
+   </div>
+  </div>
+
+  <div class="grid">
+   <div>
+    <label>Option Type</label>
+    <select id="option">
+     <option>CALL</option>
+     <option>PUT</option>
+    </select>
+   </div>
+   <div>
+    <label>Buy / Sell</label>
+    <select id="side">
+     <option>BUY</option>
+     <option>SELL</option>
+    </select>
+   </div>
+  </div>
+
+  <div class="grid">
+   <div>
+    <label>Buy Average</label>
+    <input id="buy" type="number" value="240">
+   </div>
+   <div>
+    <label>Sell Average</label>
+    <input id="sell" type="number" value="250">
+   </div>
+  </div>
+
+  <div class="grid">
+   <div>
+    <label>Quantity / Qty</label>
+    <input id="qty" type="number" value="2000">
+   </div>
+   <div>
+    <label>Profit / Loss (₹)</label>
+    <input id="tradeProfit" type="number" value="14028.23">
+   </div>
+  </div>
+
+  <label>Extra Charges / Cost (₹)</label>
+  <input id="cost" type="number" value="0">
+
+  <button onclick="addPosition()">Add Position</button>
+  <button onclick="resetDemo()" style="background:#777">Reset Demo</button>
+
+ </div>
+
+ <div class="note">
+  यह स्वतंत्र डेमो सिम्युलेटर है। यह असली Dhan अकाउंट या एक्सचेंज से कनेक्ट नहीं है।
+ </div>
+
+</section>
+
+</main>
+
+<script>
+
+const initialTrades=[
+ {
+  symbol:"SENSEX",
+  strike:79300,
+  option:"CALL",
+  side:"BUY",
+  buy:240,
+  sell:250,
+  qty:2000,
+  profit:14028.23,
+  cost:0,
+  date:"2026-11-02"
+ },
+ {
+  symbol:"SENSEX",
+  strike:76500,
+  option:"CALL",
+  side:"BUY",
+  buy:240,
+  sell:250,
+  qty:1500,
+  profit:15028.23,
+  cost:0,
+  date:"2026-11-02"
+ }
+];
+
+let trades=JSON.parse(localStorage.getItem("demoTrades"))||initialTrades;
+
+let summary=JSON.parse(localStorage.getItem("demoSummary"))||{
+ profit:29056.46,
+ gst:8100,
+ count:2
+};
+
+function money(n){
+ return "₹"+Number(n).toLocaleString("en-IN",{
+  minimumFractionDigits:2,
+  maximumFractionDigits:2
+ });
+}
+
+function showPage(id,btn){
+ document.querySelectorAll(".page").forEach(p=>{
+  p.classList.remove("active");
+ });
+ document.getElementById(id).classList.add("active");
+
+ document.querySelectorAll("nav button").forEach(b=>{
+  b.classList.remove("active");
+ });
+ btn.classList.add("active");
+ window.scrollTo(0,0);
+}
+
+function tradeCard(t){
+ return `
+ <div class="trade">
+  <div class="tradehead">
+   <span>${escapeHTML(t.symbol)} ${t.strike} ${t.option}</span>
+   <span class="${t.profit>=0?'green':'red'}">
+    ${money(t.profit)}
+   </span>
+  </div>
+
+  <div class="meta">
+   <span class="tag">${t.side}</span>
+   <span class="tag">Normal</span>
+   <span>Qty. ${t.qty}</span>
+   <span>Closed</span>
+  </div>
+
+  <div class="row">
+   <span>Date: ${t.date}</span>
+   <span>Buy Avg: ${t.buy}</span>
+   <span>Sell Avg: ${t.sell}</span>
+  </div>
+
+  <div class="row">
+   <span>Extra Cost: ${money(t.cost)}</span>
+   <span>LTP: ${t.sell}</span>
+  </div>
+ </div>`;
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;',
+ '"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
+function render(){
+
+ document.getElementById("homeProfit").textContent=money(summary.profit);
+ document.getElementById("positionProfit").textContent=money(summary.profit);
+ document.getElementById("sideProfit").textContent=money(summary.profit);
+
+ document.getElementById("homeGST").textContent=money(summary.gst);
+ document.getElementById("sideGST").textContent=money(summary.gst);
+
+ document.getElementById("homeCount").textContent=summary.count;
+ document.getElementById("positionCount").textContent=summary.count;
+
+ document.getElementById("homeTrades").textContent=trades.length;
+ document.getElementById("gstInfo").textContent=
+ "GST "+money(summary.gst)+" deducted";
+
+ document.getElementById("updated").textContent=
+ new Date().toLocaleTimeString("en-IN");
+
+ document.getElementById("recent").innerHTML=
+ trades.slice(0,2).map(tradeCard).join("");
+
+ document.getElementById("tradeList").innerHTML=
+ trades.map(tradeCard).join("");
+
+ document.getElementById("orderList").innerHTML=
+ trades.map(tradeCard).join("");
+
+ localStorage.setItem("demoTrades",JSON.stringify(trades));
+ localStorage.setItem("demoSummary",JSON.stringify(summary));
+}
+
+function updateSummary(){
+
+ summary.profit=Number(document.getElementById("editProfit").value)||0;
+ summary.gst=Number(document.getElementById("editGST").value)||0;
+ summary.count=Number(document.getElementById("editCount").value)||0;
+
+ render();
+
+ alert("Demo Summary Updated");
+}
+
+function addPosition(){
+
+ const t={
+  symbol:document.getElementById("symbol").value,
+  strike:Number(document.getElementById("strike").value),
+  option:document.getElementById("option").value,
+  side:document.getElementById("side").value,
+  buy:Number(document.getElementById("buy").value),
+  sell:Number(document.getElementById("sell").value),
+  qty:Number(document.getElementById("qty").value),
+  profit:Number(document.getElementById("tradeProfit").value),
+  cost:Number(document.getElementById("cost").value),
+  date:document.getElementById("tradeDate").value
+ };
+
+ if(!t.symbol || !t.date){
+  alert("Company और Date भरें");
+  return;
+ }
+
+ trades.unshift(t);
+ summary.count=trades.length;
+
+ render();
+
+ alert("Position Added Successfully");
+}
+
+function resetDemo(){
+
+ if(!confirm("क्या डेमो रीसेट करना है?"))return;
+
+ trades=JSON.parse(JSON.stringify(initialTrades));
+
+ summary={
+  profit:29056.46,
+  gst:8100,
+  count:2
+ };
+
+ render();
+}
+
+document.getElementById("tradeDate").value=
+ new Date().toISOString().slice(0,10);
+
+render();
+
+</script>
+</body>
+</html>
