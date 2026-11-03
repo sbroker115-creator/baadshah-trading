@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baadshah Broking Limited | Trade Positions</title>
+<style>
+:root{--g:#16845b;--dark:#173f31;--bg:#f3f5f4;--line:#e2e8e4;--muted:#68736d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:#202522}
+header{background:#fff;padding:13px 16px;box-shadow:0 1px 6px #0001;position:sticky;top:0;z-index:4}
+.top{display:flex;align-items:center;gap:10px;max-width:1000px;margin:auto}
+.logo{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#f8efd9;color:#9a701c;font-size:23px}
+.brand{font-weight:800;font-size:17px}
+.sub{font-size:11px;color:var(--muted);margin-top:3px}
+nav{display:flex;gap:8px;max-width:1000px;margin:12px auto 0;overflow:auto}
+nav button{background:transparent;color:#5d6862;border-radius:8px;padding:10px 13px;white-space:nowrap}
+nav button.active{background:#eaf5ef;color:var(--g)}
+main{max-width:1000px;margin:16px auto;padding:0 13px}
+.page{display:none}
+.page.active{display:block}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px}
+.card,.trade{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:13px;box-shadow:0 2px 6px #00000008}
+.eyebrow{font-size:14px;color:var(--muted)}
+.big{font-size:32px;font-weight:700;color:var(--dark);margin:8px 0}
+.small{font-size:13px;color:var(--muted);line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stat{background:#f7faf8;border:1px solid #edf1ee;border-radius:11px;padding:12px}
+.stat b{display:block;font-size:19px;margin-top:6px}
+.title{font-size:19px;font-weight:700;margin:17px 3px 10px}
+.filters{display:flex;gap:8px;overflow:auto;margin:14px 0}
+.chip{background:#fff;color:#56615b;border:1px solid var(--line);border-radius:10px;padding:9px 14px;white-space:nowrap}
+.chip.active{color:var(--g);border-color:#b9d9c8;background:#f0f8f3}
+.tradehead{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.profit{color:#287847}
+.loss{color:#c43c3c}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;color:var(--muted);font-size:13px}
+.tag{background:#edf6f1;color:#33765a;border-radius:7px;padding:4px 8px}
+.row{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:13px;margin-top:9px;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:11px 14px;background:var(--g);color:white;font-weight:700;cursor:pointer}
+button.alt{background:#edf4ef;color:#315b46}
+button.red{background:#fff0ef;color:#b53b32}
+button.gold{background:#c69a36;color:#171717}
+label{display:block;font-size:13px;font-weight:600;color:#58645d;margin-top:8px}
+input,select{width:100%;padding:11px;border:1px solid #d9e1dc;border-radius:9px;font-size:15px;background:#fff;margin:5px 0 7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.note{font-size:12px;background:#fff8e8;border:1px solid #f0e2bc;color:#78612c;border-radius:9px;padding:10px;line-height:1.5}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border-radius:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.toolbar input{flex:1;min-width:160px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:10;align-items:center;justify-content:center;padding:14px}
+.modal.show{display:flex}
+.modalbox{background:#fff;border-radius:14px;padding:17px;width:min(560px,100%);max-height:90vh;overflow:auto}
+footer{text-align:center;color:#87918b;font-size:11px;padding:20px}
+@media(max-width:680px){
+.layout{grid-template-columns:1fr}
+.stats{grid-template-columns:1fr 1fr}
+.big{font-size:28px}
+.side{order:-1}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="top">
+<div class="logo">♛</div>
+<div>
+<div class="brand">BAADSHAH BROKING LIMITED</div>
+<div class="sub">Trading Positions & Trade Book</div>
+</div>
+</div>
+<nav>
+<button class="active" data-page="home">Home</button>
+<button data-page="positions">Positions</button>
+<button data-page="orders">Orders</button>
+<button data-page="control">Control Panel</button>
+</nav>
+</header>
+
+<main>
+
+<section id="home" class="page active">
+<div class="layout">
+<div>
+<div class="card">
+<div class="eyebrow">Total Profit / Loss</div>
+<div class="big" id="homePnl">₹ 0.00</div>
+<div class="small">सभी सेव किए गए ट्रेड का कुल नेट परिणाम</div>
+<div class="stats">
+<div class="stat"><span class="small">Positions</span><b id="homeCount">0</b></div>
+<div class="stat"><span class="small">Total Charges</span><b id="homeCharges">₹ 0</b></div>
+<div class="stat"><span class="small">Trades</span><b id="homeTrades">0</b></div>
+</div>
+</div>
+<div class="title">Recent Positions</div>
+<div id="recent"></div>
+</div>
+
+<aside class="side">
+<div class="card">
+<div class="title" style="margin-top:0">Quick Summary</div>
+<div class="row"><span>Net P&amp;L</span><b id="sidePnl">₹ 0.00</b></div>
+<div class="row"><span>Total Charges</span><b id="sideCharges">₹ 0</b></div>
+<div class="row"><span>Updated</span><b id="updatedAt">—</b></div>
+<div class="actions">
+<button onclick="go('positions')">View Positions</button>
+<button class="alt" onclick="go('control')">Add Trade</button>
+</div>
+</div>
+<div class="note">यह स्वतंत्र ट्रेड रिकॉर्ड मैनेजर है। यह किसी ब्रोकर का आधिकारिक पेज नहीं है और अपने-आप लाइव एक्सचेंज ट्रेड नहीं करता।</div>
+</aside>
+</div>
+</section>
+
+<section id="positions" class="page">
+<div class="card">
+<div class="eyebrow">Total Profit / Loss</div>
+<div class="big" id="posPnl">₹ 0.00</div>
+<div class="small"><b id="posCount">0</b> positions · सभी रिकॉर्ड</div>
+<div class="small" id="chargesLine">Total charges ₹ 0</div>
+</div>
+
+<div class="toolbar">
+<input id="search" placeholder="ट्रेड नंबर या कंपनी खोजें" oninput="render()">
+<button class="gold" onclick="go('control')">+ Add Trade</button>
+</div>
+
+<div class="filters">
+<button class="chip active" data-filter="all">All</button>
+<button class="chip" data-filter="profit">In Profits</button>
+<button class="chip" data-filter="loss">In Loss</button>
+</div>
+
+<div class="title">Positions</div>
+<div id="trades"></div>
+</section>
+
+<section id="orders" class="page">
+<div class="title">Orders / Trade History</div>
+<div id="orderlist"></div>
+</section>
+
+<section id="control" class="page">
+<div class="layout">
+<div>
+<div class="title">Add New Trade</div>
+<div class="card">
+
+<label>Company / Index</label>
+<input id="symbol" placeholder="जैसे NIFTY, BANKNIFTY, RELIANCE">
+
+<div class="grid">
+<div>
+<label>Expiry / Date</label>
+<input id="tradeDate" type="date">
+</div>
+<div>
+<label>Strike Price</label>
+<input id="strike" type="number" placeholder="0">
+</div>
+</div>
+
+<div class="grid">
+<div>
+<label>Option Type</label>
+<select id="option">
+<option>CALL</option>
+<option>PUT</option>
+<option>EQ</option>
+<option>FUT</option>
+</select>
+</div>
+<div>
+<label>Buy / Sell</label>
+<select id="side">
+<option>BUY</option>
+<option>SELL</option>
+</select>
+</div>
+</div>
+
+<div class="grid">
+<div>
+<label>Buy Avg. (₹)</label>
+<input id="buy" type="number" step=".01" placeholder="0">
+</div>
+<div>
+<label>Sell Avg. (₹)</label>
+<input id="sell" type="number" step=".01" placeholder="0">
+</div>
+</div>
+
+<div class="grid">
+<div>
+<label>Quantity / Qty</label>
+<input id="qty" type="number" placeholder="0">
+</div>
+<div>
+<label>Profit / Loss (₹)</label>
+<input id="tradepnl" type="number" step=".01" placeholder="0">
+</div>
+</div>
+
+<label>Charges (₹)</label>
+<input id="cost" type="number" step=".01" value="0">
+
+<div class="actions">
+<button class="gold" onclick="addTrade()">Add Position</button>
+<button class="alt" onclick="clearForm()">Clear Form</button>
+</div>
+
+<p class="small">नए ट्रेड का नंबर 100 से शुरू होकर अपने-आप आगे बढ़ेगा।</p>
+</div>
+</div>
+
+<aside class="side">
+<div class="card">
+<b>Control कैसे करें</b>
+<p class="small">Positions या Orders में किसी भी ट्रेड को Edit, Delete या Share कर सकते हैं। ट्रेड हटाने पर पुष्टि पूछी जाएगी।</p>
+</div>
+<div class="note">रिकॉर्ड इसी ब्राउज़र/डिवाइस में सेव होते हैं। दूसरे फोन या अलग कंट्रोल पैनल में साझा करने के लिए ऑनलाइन डेटाबेस/सर्वर कनेक्शन अलग से चाहिए।</div>
+</aside>
+</div>
+</section>
+
+</main>
+
+<footer>Baadshah Broking Limited · Trade record manager</footer>
+
+<div class="modal" id="editModal">
+<div class="modalbox">
+<h2>Edit Trade</h2>
+<input id="editId" type="hidden">
+
+<div class="grid">
+<div><label>Trade No.</label><input id="eNo" type="number" min="100"></div>
+<div><label>Company / Index</label><input id="eSymbol"></div>
+<div><label>Date</label><input id="eDate" type="date"></div>
+<div><label>Strike</label><input id="eStrike" type="number"></div>
+<div>
+<label>Option</label>
+<select id="eOption">
+<option>CALL</option><option>PUT</option><option>EQ</option><option>FUT</option>
+</select>
+</div>
+<div>
+<label>Side</label>
+<select id="eSide"><option>BUY</option><option>SELL</option></select>
+</div>
+<div><label>Buy Avg.</label><input id="eBuy" type="number" step=".01"></div>
+<div><label>Sell Avg.</label><input id="eSell" type="number" step=".01"></div>
+<div><label>Quantity</label><input id="eQty" type="number"></div>
+<div><label>Profit / Loss</label><input id="ePnl" type="number" step=".01"></div>
+<div><label>Charges</label><input id="eCost" type="number" step=".01"></div>
+</div>
+
+<div class="actions">
+<button onclick="saveEdit()">Save Changes</button>
+<button class="alt" onclick="closeEdit()">Cancel</button>
+<button class="red" onclick="deleteFromEdit()">Delete Trade</button>
+</div>
+</div>
+</div>
+
+<script>
+const KEY='baadshah_positions_v3';
+let trades=JSON.parse(localStorage.getItem(KEY)||'[]');
+let nextNo=Number(localStorage.getItem(KEY+'_next')||100);
+let filter='all';
+
+const $=id=>document.getElementById(id);
+
+const money=n=>'₹ '+Number(n||0).toLocaleString('en-IN',{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+});
+
+const shortMoney=n=>'₹ '+Number(n||0).toLocaleString('en-IN',{
+maximumFractionDigits:2
+});
+
+function esc(s){
+return String(s??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
+}[c]));
+}
+
+function save(){
+localStorage.setItem(KEY,JSON.stringify(trades));
+localStorage.setItem(KEY+'_next',String(nextNo));
+}
+
+function title(t){
+return `${t.symbol} ${Number(t.strike||0)} ${t.option||''}`;
+}
+
+function card(t){
+return `
+<div class="trade">
+<div class="tradehead">
+<span>#${t.no} · ${esc(title(t))}</span>
+<span class="${Number(t.pnl)>=0?'profit':'loss'}">${money(t.pnl)}</span>
+</div>
+
+<div class="meta">
+<span class="tag">${esc(t.side)}</span>
+<span class="tag">${esc(t.option)}</span>
+<span>Qty. ${t.qty}</span>
+<span>${esc(t.date||'—')}</span>
+</div>
+
+<div class="row">
+<span>Buy Avg. ${money(t.buy)}</span>
+<span>Sell Avg. ${money(t.sell)}</span>
+<span>Charges ${money(t.cost)}</span>
+</div>
+
+<div class="actions">
+<button class="alt" onclick="editTrade('${t.id}')">Edit</button>
+<button class="red" onclick="deleteTrade('${t.id}')">Delete</button>
+<button onclick="shareTrade('${t.id}')">Share</button>
+</div>
+</div>`;
+}
+
+function render(){
+
+const charges=trades.reduce((a,t)=>a+Number(t.cost||0),0);
+
+const pnl=trades.reduce(
+(a,t)=>a+Number(t.pnl||0)-Number(t.cost||0),0
+);
+
+['homePnl','posPnl','sidePnl'].forEach(
+id=>$(id).textContent=money(pnl)
+);
+
+$('homeCharges').textContent=shortMoney(charges);
+$('sideCharges').textContent=shortMoney(charges);
+
+$('posCount').textContent=trades.length;
+$('homeCount').textContent=trades.length;
+$('homeTrades').textContent=trades.length;
+
+$('chargesLine').textContent='Total charges '+shortMoney(charges);
+
+$('updatedAt').textContent=new Date().toLocaleTimeString('en-IN',{
+hour:'2-digit',
+minute:'2-digit'
+});
+
+$('recent').innerHTML=trades
+.slice()
+.sort((a,b)=>b.created-a.created)
+.slice(0,3)
+.map(card)
+.join('') ||
+'<div class="empty">अभी कोई ट्रेड नहीं है। Control Panel से ट्रेड जोड़ें।</div>';
+
+const q=($('search')?.value||'').toLowerCase();
+
+const arr=trades.filter(t=>
+(filter==='all'||
+(filter==='profit'?t.pnl>=0:t.pnl<0))&&
+(`#${t.no} ${t.symbol}`.toLowerCase().includes(q))
+).sort((a,b)=>b.no-a.no);
+
+$('trades').innerHTML=arr.map(card).join('')||
+'<div class="empty">कोई ट्रेड नहीं मिला।</div>';
+
+$('orderlist').innerHTML=trades
+.slice()
+.sort((a,b)=>b.no-a.no)
+.map(card)
+.join('') ||
+'<div class="empty">कोई Order नहीं है।</div>';
+
+save();
+}
+
+function go(id){
+document.querySelectorAll('.page').forEach(
+p=>p.classList.toggle('active',p.id===id)
+);
+
+document.querySelectorAll('nav button').forEach(
+b=>b.classList.toggle('active',b.dataset.page===id)
+);
+
+window.scrollTo(0,0);
+render();
+}
+
+document.querySelectorAll('nav button').forEach(
+b=>b.onclick=()=>go(b.dataset.page)
+);
+
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('.chip').forEach(
+x=>x.classList.remove('active')
+);
+b.classList.add('active');
+filter=b.dataset.filter;
+render();
+});
+
+function clearForm(){
+['symbol','strike','buy','sell','qty','tradepnl'].forEach(
+id=>$(id).value=''
+);
+$('cost').value=0;
+$('tradeDate').value=new Date().toISOString().slice(0,10);
+}
+
+function addTrade(){
+
+if(!$('symbol').value.trim()){
+alert('Company / Index का नाम भरें।');
+return;
+}
+
+let t={
+id:String(Date.now())+Math.random(),
+no:nextNo++,
+symbol:$('symbol').value.trim(),
+date:$('tradeDate').value||new Date().toISOString().slice(0,10),
+strike:+$('strike').value||0,
+option:$('option').value,
+side:$('side').value,
+buy:+$('buy').value||0,
+sell:+$('sell').value||0,
+qty:+$('qty').value||0,
+pnl:+$('tradepnl').value||0,
+cost:+$('cost').value||0,
+created:Date.now()
+};
+
+trades.push(t);
+save();
+clearForm();
+go('positions');
+}
+
+function editTrade(id){
+
+let t=trades.find(x=>x.id===id);
+if(!t)return;
+
+[
+['editId','id'],
+['eNo','no'],
+['eSymbol','symbol'],
+['eDate','date'],
+['eStrike','strike'],
+['eOption','option'],
+['eSide','side'],
+['eBuy','buy'],
+['eSell','sell'],
+['eQty','qty'],
+['ePnl','pnl'],
+['eCost','cost']
+].forEach(([a,b])=>$(a).value=t[b]);
+
+$('editModal').classList.add('show');
+}
+
+function closeEdit(){
+$('editModal').classList.remove('show');
+}
+
+function saveEdit(){
+
+let t=trades.find(x=>x.id===$('editId').value);
+if(!t)return;
+
+let n=+$('eNo').value;
+
+if(n<100||trades.some(x=>x.id!==t.id&&x.no===n)){
+alert('Trade number 100 या उससे ऊपर और अलग होना चाहिए।');
+return;
+}
+
+Object.assign(t,{
+no:n,
+symbol:$('eSymbol').value.trim(),
+date:$('eDate').value,
+strike:+$('eStrike').value||0,
+option:$('eOption').value,
+side:$('eSide').value,
+buy:+$('eBuy').value||0,
+sell:+$('eSell').value||0,
+qty:+$('eQty').value||0,
+pnl:+$('ePnl').value||0,
+cost:+$('eCost').value||0
+});
+
+nextNo=Math.max(nextNo,n+1);
+save();
+closeEdit();
+render();
+}
+
+function deleteTrade(id){
+
+let t=trades.find(x=>x.id===id);
+
+if(t&&confirm(`Trade #${t.no} हटाना चाहते हैं?`)){
+trades=trades.filter(x=>x.id!==id);
+save();
+render();
+}
+}
+
+function deleteFromEdit(){
+deleteTrade($('editId').value);
+closeEdit();
+}
+
+async function shareTrade(id){
+
+let t=trades.find(x=>x.id===id);
+if(!t)return;
+
+let msg=`BAADSHAH BROKING LIMITED
+Trade No: ${t.no}
+Symbol: ${t.symbol}
+Date: ${t.date}
+Type: ${t.side} ${t.option}
+Strike: ${t.strike}
+Qty: ${t.qty}
+Buy: ₹${t.buy}
+Sell: ₹${t.sell}
+P&L: ₹${t.pnl}
+Charges: ₹${t.cost}
+
+यह साझा किया गया ट्रेड रिकॉर्ड है।`;
+
+if(navigator.share){
+try{
+await navigator.share({
+title:'Trade #'+t.no,
+text:msg
+});
+}catch(e){}
+}else{
+try{
+await navigator.clipboard.writeText(msg);
+alert('ट्रेड का विवरण कॉपी हो गया। अब WhatsApp पर भेज सकते हैं।');
+}catch(e){
+prompt('कॉपी करके शेयर करें:',msg);
+}
+}
+}
+
+$('tradeDate').value=new Date().toISOString().slice(0,10);
+render();
+</script>
+
+</body>
+</html>
